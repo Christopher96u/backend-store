@@ -1,6 +1,11 @@
 import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
+import { ConfigModule } from '@nestjs/config';
+import { getEnvPath } from './common/helpers/env.helper';
+
+const envFilePath = getEnvPath(`${__dirname}/common/envs`);
+
 import { ProductsController } from './products/products.controller';
 import { CategoriesController } from './categories/categories.controller';
 import { ProductsModule } from './products/products.module';
@@ -15,6 +20,10 @@ import { ProductsService } from './products/products.service';
 
 @Module({
   imports: [
+    ConfigModule.forRoot({
+      envFilePath,
+      isGlobal: true,
+    }),
     ProductsModule,
     CategoriesModule,
     BrandsModule,
