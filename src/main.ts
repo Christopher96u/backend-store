@@ -9,6 +9,7 @@ async function bootstrap() {
     new ValidationPipe({
       // remove fields that are not defined in the class (our DTOs)
       whitelist: true,
+      //transform: true
     }),
   );
   await app.listen(configService.get('PORT'));

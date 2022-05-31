@@ -5,7 +5,10 @@
 # environments
 /src/common/envs/production.env 
 /src/common/envs/development.env
+ormconfig.env
 
+# Data
+/postgres_data
 # Logs
 logs
 *.log
