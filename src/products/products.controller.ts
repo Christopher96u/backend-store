@@ -15,50 +15,29 @@ import { UpdateProductDto } from './dto/updateProduct.dto';
 import { ProductsService } from './products.service';
 @Controller('products')
 export class ProductsController {
-  constructor(private productsService: ProductsService) {}
-  // Module (controller, service )
+  constructor(private readonly productsService: ProductsService) {}
 
   @Get()
-  getAllProducts(
-    @Query('limit', ParseIntPipe) limit: number,
-    @Query('offset', ParseIntPipe) offset: number,
-    @Query('brand') brand: string,
-  ) {
-    /* return {
-      message: 'This action returns all products',
-      limit: limit,
-      ofset: ofset,
-      brand: brand,
-    }; */
+  findAll() {
     return this.productsService.findAll();
   }
   @Get(':id')
-  getOneProduct(@Param('id', ParseIntPipe) id: number) {
+  findOne(@Param('id', ParseIntPipe) id: number) {
     return this.productsService.findOne(id);
   }
   @Post()
-  createProduct(@Body() payload: CreateProductDto) {
-    // Just take brand and price as payload
-    return this.productsService.create(payload);
+  create(@Body() createProductDto: CreateProductDto) {
+    return this.productsService.create(createProductDto);
   }
   @Put(':id')
-  updateProduct(
+  update(
     @Param('id', ParseIntPipe) id: number,
-    @Body() payload: UpdateProductDto,
+    @Body() updateProductDto: UpdateProductDto,
   ) {
-    /* return {
-      message: 'This action update a product',
-      id: id,
-      data: payload,
-    }; */
-    return this.productsService.update(id, payload);
+    return this.productsService.update(id, updateProductDto);
   }
   @Delete(':id')
-  deleteProduct(@Param('id', ParseIntPipe) id: number) {
-    /* return {
-      message: 'This action delete a product',
-      id: id,
-    }; */
+  remove(@Param('id', ParseIntPipe) id: number) {
     return this.productsService.remove(id);
   }
 }

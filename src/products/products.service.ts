@@ -1,64 +1,70 @@
 import {
-  HttpException,
-  HttpStatus,
+  BadRequestException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { CategoriesService } from 'src/categories/categories.service';
+import { DeleteResult, Repository } from 'typeorm';
 
 import { CreateProductDto } from './dto/createProduct.dto';
 import { UpdateProductDto } from './dto/updateProduct.dto';
+import { Product } from './entities/product.entity';
 @Injectable()
 export class ProductsService {
-  private counterId = 2;
-  private products = [
-    {
-      id: 1,
-      name: 'Product 1',
-      price: 192,
-    },
-    {
-      id: 2,
-      name: 'Product 2',
-      price: 205,
-    },
-  ];
-  findAll() {
-    return this.products;
+  constructor(
+    @InjectRepository(Product)
+    private readonly productRepository: Repository<Product>,
+    private readonly categoriesService: CategoriesService,
+  ) {}
+  findAll(): Promise<Product[]> {
+    return this.productRepository.find({
+      relations: ['category'],
+    });
   }
-  findOne(id: number) {
-    const result = this.products.find((product) => product.id == id);
-    if (!result) {
-      throw new HttpException(
-        `Product with id #${id} Not Found`,
-        HttpStatus.NOT_FOUND,
+
+  async findOne(id: number): Promise<Product> {
+    const product = await this.productRepository.findOne(id);
+    if (!product) {
+      throw new NotFoundException(`Product with id #${id} not found`);
+    }
+    return product;
+  }
+  async create(createProductDto: CreateProductDto): Promise<Product> {
+    const category = await this.categoriesService.findOne(
+      createProductDto.categoryId,
+    );
+    const newProduct = this.productRepository.create(createProductDto);
+    newProduct.category = category;
+    const response = this.productRepository
+      .save(newProduct)
+      .then((data) => {
+        return data;
+      })
+      .catch((error) => {
+        throw new BadRequestException(`${error.message || 'Unexpected Error'}`);
+      });
+    return response;
+  }
+  async update(
+    id: number,
+    updateProductDto: UpdateProductDto,
+  ): Promise<Product> {
+    const currentProduct = await this.productRepository.findOne(id);
+    if (updateProductDto.categoryId) {
+      const category = await this.categoriesService.findOne(
+        updateProductDto.categoryId,
       );
+      currentProduct.category = category;
     }
-    return result;
+    this.productRepository.merge(currentProduct, updateProductDto);
+    return this.productRepository.save(currentProduct);
   }
-  create(payload: CreateProductDto) {
-    this.counterId = this.counterId + 1;
-    const newProduct = {
-      id: this.counterId,
-      ...payload,
-    };
-    this.products.push(newProduct);
-    return newProduct;
-  }
-  update(id: number, payload: UpdateProductDto) {
-    const product = this.findOne(id);
-    const index = this.products.findIndex((item) => item.id === id);
-    this.products[index] = {
-      ...product,
-      ...payload,
-    };
-    return this.products[index];
-  }
-  remove(id: number) {
-    const index = this.products.findIndex((item) => item.id === id);
-    if (index === -1) {
-      throw new NotFoundException(`Product with id ${id} not found`);
+  async remove(id: number): Promise<DeleteResult> {
+    const product = await this.productRepository.findOne(id);
+    if (!product) {
+      throw new NotFoundException(`Product with id #${id} not found`);
     }
-    this.products.splice(index, 1);
-    return true;
+    return this.productRepository.delete(id);
   }
 }

@@ -1,15 +1,15 @@
-import { Product } from 'src/products/entities/product.entity';
+import { Category } from 'src/categories/entities/category.entity';
 import {
   Column,
-  PrimaryGeneratedColumn,
-  Entity,
   CreateDateColumn,
+  Entity,
+  ManyToOne,
+  PrimaryGeneratedColumn,
   UpdateDateColumn,
-  OneToMany,
 } from 'typeorm';
 
-@Entity({ name: 'categories' })
-export class Category {
+@Entity({ name: 'products' })
+export class Product {
   @PrimaryGeneratedColumn()
   id: number;
 
@@ -19,21 +19,25 @@ export class Category {
   @Column({ type: 'text' })
   description: string;
 
-  @Column({ type: 'varchar', length: 255, unique: true })
-  imageUrl: string;
+  // Price in cents
+  @Column({ type: 'bigint' })
+  price: number;
 
-  @Column({ type: 'boolean', default: false })
-  isDeleted: boolean;
+  @Column({ type: 'int' })
+  stock: number;
 
   @Column({ type: 'boolean', default: true })
   isActive: boolean;
+
+  @Column({ type: 'varchar', length: 255, unique: true })
+  imageUrl: string;
 
   @CreateDateColumn({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   createdAt: Date;
 
   @UpdateDateColumn({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
-  updatedAte: Date;
+  updatedAt: Date;
 
-  @OneToMany(() => Product, (product) => product.category)
-  products: Product[];
+  @ManyToOne(() => Category, (category) => category.products)
+  category: Category;
 }

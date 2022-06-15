@@ -1,5 +1,3 @@
-import { CreateCategoryDto } from './dto/createCategory.dto';
-import { Category } from './entities/category.entity';
 import {
   BadRequestException,
   Injectable,
@@ -7,7 +5,10 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DeleteResult, Repository } from 'typeorm';
+
+import { Category } from './entities/category.entity';
 import { UpdateCategoryDto } from './dto/updateCategory.dto';
+import { CreateCategoryDto } from './dto/createCategory.dto';
 @Injectable()
 export class CategoriesService {
   constructor(
@@ -42,7 +43,6 @@ export class CategoriesService {
     id: number,
     updateCategoryDto: UpdateCategoryDto,
   ): Promise<Category> {
-    //
     const currentCategory = await this.categoryRepository.findOne(id);
     this.categoryRepository.merge(currentCategory, updateCategoryDto);
     return this.categoryRepository.save(currentCategory);
